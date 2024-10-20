@@ -26,26 +26,36 @@ Add the following settings to the **next.config.js** file located at the root ou
 module.exports = {
   images: {
     loader: 'custom',
-    loaderFile: './imageLoader.js',
+    loaderFile: './imageLoader.ts',
   },
 }
 ```
 
 Next, create the `imageLoader.js` file in the specified path (relative to the root of your Next.js application).
 
-```js
-const normalizeSrc = src => {
-  return src.startsWith('/') ? src.slice(1) : src;
+```ts
+const normalizeSrc = (src: string) => {
+    return src.startsWith("/") ? src.slice(1) : src;
 };
 
-export default function cloudflareLoader ({ src, width, quality }) {
-  const params = [`width=${width}`];
-  if (quality) {
-    params.push(`quality=${quality}`);
-  }
-  const paramsString = params.join(',');
-  return `/cdn-cgi/image/${paramsString}/${normalizeSrc(src)}`;
-};
+export default function cloudflareLoader({
+    src,
+    width,
+    quality,
+}: { src: string; width: number; quality?: number }) {
+    const isLocal = !src.includes("localhost");
+
+    if (isLocal) {
+        return src;
+    }
+
+    const params = [`width=${width}`];
+    if (quality) {
+        params.push(`quality=${quality}`);
+    }
+    const paramsString = params.join(",");
+    return `/cdn-cgi/image/${paramsString}/${normalizeSrc(src)}`;
+}
 ```
 
 ### Custom Loaders
